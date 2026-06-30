@@ -11,7 +11,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: adminpassword
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -81,6 +81,23 @@ services:
       - JWT_SECRET=super_secret_library_key_123
     depends_on:
       - postgres
+    networks:
+      - library-net
+
+  circulation-service:
+    build:
+      context: ./circulation-service
+      dockerfile: Dockerfile
+    container_name: library_circulation_service
+    restart: always
+    ports:
+      - "5003:5003"
+    environment:
+      - PORT=5003
+      - MONGO_URI=mongodb://admin:adminpassword@mongodb:27017/circulation_db?authSource=admin
+      - JWT_SECRET=super_secret_library_key_123
+    depends_on:
+      - mongodb
     networks:
       - library-net
 

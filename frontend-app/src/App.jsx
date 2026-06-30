@@ -10,7 +10,9 @@ import AdminLayout from './layouts/AdminLayout';
 import Home from './pages/user/Home';
 import BookDetail from './pages/user/BookDetail';
 import UserDashboard from './pages/user/UserDashboard';
+import Profile from './pages/user/Profile';
 import Login from './pages/Login';
+import Register from './pages/Register';
 
 // Admin Pages
 import AdminOverview from './pages/admin/AdminOverview';
@@ -37,12 +39,14 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           {/* User Routes */}
-          <Route element={<ProtectedRoute allowedRoles={['STUDENT']}><UserLayout /></ProtectedRoute>}>
+          <Route element={<ProtectedRoute allowedRoles={['STUDENT', 'ADMIN']}><UserLayout /></ProtectedRoute>}>
             <Route path="/" element={<Home />} />
             <Route path="/book/:id" element={<BookDetail />} />
             <Route path="/dashboard" element={<UserDashboard />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
 
           {/* Admin Routes */}

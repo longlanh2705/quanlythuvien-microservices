@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const postgresUri = process.env.POSTGRES_URI || 'postgres://postgres:adminpassword@localhost:5432/library_db';
+const postgresUri = process.env.POSTGRES_URI || 'postgres://postgres:adminpassword@localhost:5433/library_db';
 
 export const sequelize = new Sequelize(postgresUri, {
   dialect: 'postgres',

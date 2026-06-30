@@ -16,47 +16,52 @@ export const createBook = async (bookData) => {
 };
 
 export const getAllBooks = async (filters = {}, page = 1, limit = 10) => {
+  // ── Sanitize pagination ────────────────────────────────────────────────────
+  const safePage  = Math.max(1, parseInt(page,  10) || 1);
+  const safeLimit = Math.min(50, Math.max(1, parseInt(limit, 10) || 10));
+  const skip      = (safePage - 1) * safeLimit;
+
+  // ── Sanitize filter values ─────────────────────────────────────────────────
   const query = {};
-  
-  // Tìm kiếm theo từ khóa (text search)
+
   if (filters.search) {
-    query.$text = { $search: filters.search };
-  }
-  
-  // Tìm theo danh mục
-  if (filters.category) {
-    query.category = filters.category;
-  }
-  
-  // Tìm theo tác giả
-  if (filters.author) {
-    query.author = { $regex: filters.author, $options: 'i' };
+    const search = String(filters.search).trim().slice(0, 100);
+    if (search) query.$text = { $search: search };
   }
 
-  // Lọc theo trạng thái còn sách hay không
+  if (filters.category) {
+    // Chỉ cho phép text thuần (không có regex injection)
+    const cat = String(filters.category).trim().slice(0, 50);
+    if (cat) query.category = cat;
+  }
+
+  if (filters.author) {
+    // Escape ký tự regex đặc biệt trước khi dùng $regex
+    const raw    = String(filters.author).trim().slice(0, 80);
+    const escaped = raw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (escaped) query.author = { $regex: escaped, $options: 'i' };
+  }
+
   if (filters.available === 'true') {
     query.availableQuantity = { $gt: 0 };
   }
 
-  const skip = (page - 1) * limit;
-  
-  const books = await Book.find(query)
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
-    
-  const total = await Book.countDocuments(query);
-  
+  const [books, total] = await Promise.all([
+    Book.find(query).sort({ createdAt: -1 }).skip(skip).limit(safeLimit),
+    Book.countDocuments(query),
+  ]);
+
   return {
     books,
     pagination: {
       total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    }
+      page:       safePage,
+      limit:      safeLimit,
+      totalPages: Math.ceil(total / safeLimit),
+    },
   };
 };
+
 
 export const getBookById = async (id) => {
   const book = await Book.findById(id);

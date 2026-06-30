@@ -1,62 +1,76 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useEffect, useContext } from 'react';
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  // THÊM BIẾN LOADING NÀY ĐỂ KHỚP VỚI APP.JSX CỦA BẠN
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Kiểm tra token trong localStorage khi khởi động
-    const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
-    if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
+    const userData = localStorage.getItem('user');
+    if (token && userData) {
+      setUser(JSON.parse(userData));
     }
+    // KIỂM TRA XONG THÌ PHẢI TẮT LOADING ĐỂ APP.JSX VẼ GIAO DIỆN
     setLoading(false);
   }, []);
 
   const login = async (username, password) => {
     try {
-      const res = await fetch('http://localhost:5002/api/auth/login', {
+      const response = await fetch('http://localhost:5002/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password })
       });
-      const data = await res.json();
+      const data = await response.json();
+
       if (data.success) {
-        setUser(data.data.user);
-        localStorage.setItem('user', JSON.stringify(data.data.user));
         localStorage.setItem('token', data.data.token);
-        return { success: true, role: data.data.user.role };
+        localStorage.setItem('user', JSON.stringify(data.data.user));
+        setUser(data.data.user);
+        return { success: true };
+      } else {
+        return { success: false, message: data.message };
       }
-      return { success: false, message: data.message };
     } catch (error) {
-      // Mock logic cho dev khi server auth chưa chạy
-      if (username === 'admin' && password === 'admin123') {
-        const mockUser = { id: '1', username: 'admin', role: 'ADMIN', fullName: 'Quản trị viên' };
-        setUser(mockUser);
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        return { success: true, role: 'ADMIN' };
-      } else if (username.startsWith('SV')) {
-        const mockUser = { id: '2', username: username, role: 'STUDENT', fullName: 'Sinh viên' };
-        setUser(mockUser);
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        return { success: true, role: 'STUDENT' };
+      return { success: false, message: 'Lỗi kết nối đến máy chủ!' };
+    }
+  };
+
+  const register = async (username, password, fullName) => {
+    try {
+      const response = await fetch('http://localhost:5002/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, fullName })
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        localStorage.setItem('token', data.data.token);
+        localStorage.setItem('user', JSON.stringify(data.data.user));
+        setUser(data.data.user);
+        return { success: true };
+      } else {
+        return { success: false, message: data.message };
       }
-      return { success: false, message: 'Lỗi kết nối tới Auth Server' };
+    } catch (error) {
+      return { success: false, message: 'Lỗi kết nối đến máy chủ!' };
     }
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
   };
 
+  // TRUYỀN THÊM LOADING VÀO VALUE
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
-      {!loading && children}
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+      {children}
     </AuthContext.Provider>
   );
 };

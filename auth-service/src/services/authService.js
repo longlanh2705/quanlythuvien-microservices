@@ -1,22 +1,26 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { Op } from 'sequelize';
 import User from '../models/user.js';
-import { sequelize } from '../config/db.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_library_key_123';
 
+const signToken = (user) =>
+  jwt.sign(
+    { id: user.id, username: user.username, role: user.role, fullName: user.fullName },
+    JWT_SECRET,
+    { expiresIn: '1d' }
+  );
+
+// ─── 1. Seed Admin ────────────────────────────────────────────────────────────
 export const seedAdmin = async () => {
   try {
-    // Sync DB structure first
-    await sequelize.sync({ force: false });
+    await User.sync({ alter: true });
 
-    // Check if admin exists
     const admin = await User.findOne({ where: { username: 'admin' } });
     if (!admin) {
       console.log('Không tìm thấy tài khoản admin, đang tiến hành tạo tự động...');
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash('admin123', salt);
-
+      const hashedPassword = await bcrypt.hash('admin123', 10);
       await User.create({
         username: 'admin',
         password: hashedPassword,
@@ -32,56 +36,72 @@ export const seedAdmin = async () => {
   }
 };
 
+// ─── 2. Đăng ký ───────────────────────────────────────────────────────────────
+export const registerAccount = async (username, password, fullName) => {
+  const cleanUsername = username.trim().toLowerCase();
+  const cleanFullName = fullName.trim();
+
+  // Kiểm tra trùng username (không phân biệt hoa/thường)
+  const existingUser = await User.findOne({
+    where: { username: { [Op.iLike]: cleanUsername } },
+  });
+  if (existingUser) {
+    throw new Error(`Tài khoản '${cleanUsername}' đã tồn tại trong hệ thống!`);
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const newUser = await User.create({
+    username: cleanUsername,
+    password: hashedPassword,
+    role: 'STUDENT',
+    fullName: cleanFullName,
+  });
+
+  const token = signToken(newUser);
+  return {
+    token,
+    user: { id: newUser.id, username: newUser.username, role: newUser.role, fullName: newUser.fullName },
+  };
+};
+
+// ─── 3. Đăng nhập ─────────────────────────────────────────────────────────────
 export const login = async (username, password) => {
-  const user = await User.findOne({ where: { username } });
+  const cleanUsername = username.trim().toLowerCase();
+
+  // Tìm bất kể hoa/thường để đồng nhất với đăng ký
+  const user = await User.findOne({
+    where: { username: { [Op.iLike]: cleanUsername } },
+  });
+
   if (!user) {
-    throw new Error('Sai tên đăng nhập hoặc mật khẩu');
+    // Trả về thông báo chung — không tiết lộ username có tồn tại hay không
+    throw new Error('Tài khoản hoặc mật khẩu không chính xác!');
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    throw new Error('Sai tên đăng nhập hoặc mật khẩu');
+    throw new Error('Tài khoản hoặc mật khẩu không chính xác!');
   }
 
-  const token = jwt.sign(
-    { id: user.id, username: user.username, role: user.role, fullName: user.fullName },
-    JWT_SECRET,
-    { expiresIn: '1d' }
-  );
-
+  const token = signToken(user);
   return {
     token,
-    user: {
-      id: user.id,
-      username: user.username,
-      role: user.role,
-      fullName: user.fullName,
-    }
+    user: { id: user.id, username: user.username, role: user.role, fullName: user.fullName },
   };
 };
 
-export const createStudentAccount = async (studentId, fullName) => {
-  // Logic kiểm tra trùng mã SV
-  const exists = await User.findOne({ where: { username: studentId } });
-  if (exists) {
-    throw new Error(`Sinh viên với mã ${studentId} đã có tài khoản`);
-  }
+// ─── 4. Cập nhật hồ sơ ────────────────────────────────────────────────────────
+export const updateUserProfile = async (userId, { fullName }) => {
+  const user = await User.findByPk(userId);
+  if (!user) throw new Error('Không tìm thấy người dùng.');
 
-  // Mật khẩu mặc định là mã sinh viên
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(studentId, salt);
+  user.fullName = fullName.trim();
+  await user.save();
 
-  const newUser = await User.create({
-    username: studentId,
-    password: hashedPassword,
-    role: 'STUDENT',
-    fullName: fullName,
-  });
-
+  const token = signToken(user);
   return {
-    id: newUser.id,
-    username: newUser.username,
-    role: newUser.role,
-    fullName: newUser.fullName,
+    token,
+    user: { id: user.id, username: user.username, role: user.role, fullName: user.fullName },
   };
 };
