@@ -15,7 +15,10 @@ import Login from './pages/Login';
 // Admin Pages
 import AdminOverview from './pages/admin/AdminOverview';
 import CatalogManager from './pages/admin/CatalogManager';
-import StudentManager from './pages/admin/StudentManager'; // Will create next
+import CirculationManager from './pages/admin/CirculationManager';
+import StudentManager from './pages/admin/StudentManager';
+import PenaltyManager from './pages/admin/PenaltyManager';
+import SystemManager from './pages/admin/SystemManager';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
@@ -23,9 +26,9 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   if (loading) return <div>Đang tải...</div>;
   if (!user) return <Navigate to="/login" replace />;
   
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  if (allowedRoles && !allowedRoles.some(r => user.role.includes(r) || user.role === 'ADMIN')) {
     // Nếu có quyền nhưng sai role, đẩy về đúng chỗ
-    return user.role === 'ADMIN' ? <Navigate to="/admin" replace /> : <Navigate to="/" replace />;
+    return user.role !== 'STUDENT' ? <Navigate to="/admin" replace /> : <Navigate to="/" replace />;
   }
 
   return children;
@@ -46,10 +49,13 @@ function App() {
           </Route>
 
           {/* Admin Routes */}
-          <Route path="/admin" element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminLayout /></ProtectedRoute>}>
+          <Route path="/admin" element={<ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN', 'LIBRARIAN', 'INVENTORY']}><AdminLayout /></ProtectedRoute>}>
             <Route index element={<AdminOverview />} />
             <Route path="catalog" element={<CatalogManager />} />
+            <Route path="circulation" element={<CirculationManager />} />
             <Route path="students" element={<StudentManager />} />
+            <Route path="penalties" element={<PenaltyManager />} />
+            <Route path="system" element={<SystemManager />} />
           </Route>
 
           {/* Bắt các route không tồn tại */}

@@ -22,10 +22,35 @@ export const seedAdmin = async () => {
         password: hashedPassword,
         role: 'ADMIN',
         fullName: 'Quản Trị Viên Hệ Thống',
+        status: 'ACTIVE',
       });
       console.log('Đã tạo tài khoản admin thành công (admin / admin123)');
     } else {
-      console.log('Tài khoản admin đã tồn tại. Bỏ qua bước seed.');
+      // Đảm bảo admin luôn ACTIVE (fix trường hợp status bị NULL sau khi thêm cột mới)
+      if (admin.status !== 'ACTIVE') {
+        admin.status = 'ACTIVE';
+        await admin.save();
+        console.log('Đã cập nhật trạng thái admin thành ACTIVE.');
+      } else {
+        console.log('Tài khoản admin đã tồn tại. Bỏ qua bước seed.');
+      }
+    }
+
+    // Check if student exists
+    const student = await User.findOne({ where: { username: 'SV2021001' } });
+    if (!student) {
+      console.log('Không tìm thấy tài khoản sinh viên mẫu, đang tạo tự động...');
+      const salt = await bcrypt.genSalt(10);
+      const studentHashed = await bcrypt.hash('SV2021001', salt);
+
+      await User.create({
+        username: 'SV2021001',
+        password: studentHashed,
+        role: 'STUDENT',
+        fullName: 'Nguyễn Văn A',
+        status: 'ACTIVE',
+      });
+      console.log('Đã tạo tài khoản sinh viên mẫu thành công (SV2021001 / SV2021001)');
     }
   } catch (error) {
     console.error('Lỗi khi seed tài khoản admin:', error.message);
@@ -41,6 +66,13 @@ export const login = async (username, password) => {
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
     throw new Error('Sai tên đăng nhập hoặc mật khẩu');
+  }
+
+  if (user.status === 'PENDING') {
+    throw new Error('Tài khoản đang chờ duyệt');
+  }
+  if (user.status === 'LOCKED') {
+    throw new Error('Tài khoản đã bị khóa');
   }
 
   const token = jwt.sign(
@@ -76,6 +108,7 @@ export const createStudentAccount = async (studentId, fullName) => {
     password: hashedPassword,
     role: 'STUDENT',
     fullName: fullName,
+    status: 'PENDING',
   });
 
   return {

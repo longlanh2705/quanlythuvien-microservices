@@ -1,0 +1,11 @@
+{
+  "name": "quanlythuvieb",
+  "version": "1.0.0",
+  "description": "Library Management System Root",
+  "scripts": {
+    "postinstall": "npm install --prefix frontend-app",
+    "dev": "start-all.bat",
+    "start": "start-all.bat",
+    "start:all": "start-all.bat"
+  }
+}
