@@ -36,6 +36,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const register = async (username, password, fullName) => {
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, fullName }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setUser(data.data.user);
+        localStorage.setItem('user', JSON.stringify(data.data.user));
+        localStorage.setItem('token', data.data.token);
+        return { success: true };
+      }
+      return { success: false, message: data.message };
+    } catch (error) {
+      return { success: false, message: 'Lỗi kết nối đến máy chủ!' };
+    }
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
@@ -43,8 +63,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
-      {!loading && children}
+    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+      {children}
     </AuthContext.Provider>
   );
 };

@@ -118,3 +118,38 @@ export const createStudentAccount = async (studentId, fullName) => {
     fullName: newUser.fullName,
   };
 };
+
+export const registerAccount = async (username, password, fullName) => {
+  // Logic kiểm tra trùng username
+  const exists = await User.findOne({ where: { username } });
+  if (exists) {
+    throw new Error(`Tài khoản với tên đăng nhập/mã SV ${username} đã tồn tại`);
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  const newUser = await User.create({
+    username,
+    password: hashedPassword,
+    role: 'STUDENT',
+    fullName: fullName,
+    status: 'ACTIVE', // Đăng ký xong thì active luôn để test
+  });
+
+  const token = jwt.sign(
+    { id: newUser.id, username: newUser.username, role: newUser.role, fullName: newUser.fullName },
+    JWT_SECRET,
+    { expiresIn: '1d' }
+  );
+
+  return {
+    token,
+    user: {
+      id: newUser.id,
+      username: newUser.username,
+      role: newUser.role,
+      fullName: newUser.fullName,
+    }
+  };
+};

@@ -1,16 +1,27 @@
 import React from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, BookCopy, Users, LogOut, ClipboardList, ArrowLeftRight, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const AdminLayout = () => {
-  const location = useLocation();
-  const { user } = useAuth();
-  const role = user?.role || 'ADMIN'; // Default fallback
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const role = user?.role || 'ADMIN';
 
   const isSuperAdmin = role === 'ADMIN' || role === 'SUPER_ADMIN';
   const isLibrarian = role === 'LIBRARIAN' || isSuperAdmin;
   const isInventory = role === 'INVENTORY' || isSuperAdmin;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
+
+  const navStyle = ({ isActive }) => ({
+    justifyContent: 'flex-start',
+    background: isActive ? 'rgba(59, 130, 246, 0.2)' : 'transparent',
+    color: isActive ? 'var(--accent-blue)' : 'var(--text-primary)',
+  });
 
   return (
     <div className="app-container" style={{ flexDirection: 'row' }}>
@@ -23,38 +34,38 @@ const AdminLayout = () => {
         </div>
         
         <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0 1rem' }}>
-          <Link to="/admin" className="btn btn-secondary" style={{ justifyContent: 'flex-start', background: 'transparent' }}>
+          <NavLink to="/admin" end className="btn btn-secondary" style={navStyle}>
             <LayoutDashboard size={18} /> Tổng quan
-          </Link>
+          </NavLink>
           {isInventory && (
-            <Link to="/admin/catalog" className="btn btn-secondary" style={{ justifyContent: 'flex-start', background: 'transparent' }}>
+            <NavLink to="/admin/catalog" className="btn btn-secondary" style={navStyle}>
               <BookCopy size={18} /> Quản lý Sách
-            </Link>
+            </NavLink>
           )}
           {isLibrarian && (
             <>
-              <Link to="/admin/circulation" className={`btn btn-secondary ${location.pathname === '/admin/circulation' ? 'active' : ''}`} style={{ justifyContent: 'flex-start', background: 'transparent' }}>
+              <NavLink to="/admin/circulation" className="btn btn-secondary" style={navStyle}>
                 <ArrowLeftRight size={18} /> Quản lý Mượn/Trả
-              </Link>
-              <Link to="/admin/penalties" className={`btn btn-secondary ${location.pathname === '/admin/penalties' ? 'active' : ''}`} style={{ justifyContent: 'flex-start', background: 'transparent' }}>
+              </NavLink>
+              <NavLink to="/admin/penalties" className="btn btn-secondary" style={navStyle}>
                 <AlertCircle size={18} /> Quản lý Vi phạm
-              </Link>
-              <Link to="/admin/students" className="btn btn-secondary" style={{ justifyContent: 'flex-start', background: 'transparent' }}>
+              </NavLink>
+              <NavLink to="/admin/students" className="btn btn-secondary" style={navStyle}>
                 <Users size={18} /> Quản lý Độc giả
-              </Link>
+              </NavLink>
             </>
           )}
           {isSuperAdmin && (
-            <Link to="/admin/system" className={`btn btn-secondary ${location.pathname === '/admin/system' ? 'active' : ''}`} style={{ justifyContent: 'flex-start', background: 'transparent' }}>
+            <NavLink to="/admin/system" className="btn btn-secondary" style={navStyle}>
               <ClipboardList size={18} /> Quản trị Hệ thống
-            </Link>
+            </NavLink>
           )}
         </nav>
         
         <div style={{ padding: '2rem' }}>
-          <Link to="/" className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
+          <button onClick={handleLogout} className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
             <LogOut size={18} /> Đăng xuất
-          </Link>
+          </button>
         </div>
       </aside>
 
