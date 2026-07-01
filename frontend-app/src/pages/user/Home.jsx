@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search } from 'lucide-react';
+import { getBooks } from '../../services/bookService';
 
 const Home = () => {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Fetch dữ liệu từ Catalog Service
+  // Fetch dữ liệu từ Catalog Service thông qua bookService
   useEffect(() => {
     const fetchBooks = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`http://localhost:5001/api/books?search=${searchQuery}`);
-        const data = await res.json();
-        if (data.success) {
+        // Gọi API sử dụng Axios thay vì fetch trực tiếp
+        const data = await getBooks({ search: searchQuery });
+        if (data && data.data) {
           setBooks(data.data);
         } else {
-          // Mock data nếu API trả về false (do chưa chạy server)
           generateMockBooks();
         }
       } catch (err) {
@@ -74,23 +74,29 @@ const Home = () => {
           <div style={{ textAlign: 'center', padding: '2rem' }}>Đang tải dữ liệu...</div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '2rem' }}>
-            {books.map((book) => (
-              <Link to={`/book/${book._id}`} key={book._id} className="glass-panel hover-lift" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', height: '100%' }}>
-                <div style={{ height: '200px', background: 'linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary))', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>Bìa sách</span>
-                </div>
-                <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>{book.title}</h3>
-                <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontSize: '0.9rem' }}>{book.author}</p>
-                <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.8rem', padding: '0.2rem 0.6rem', background: 'rgba(255,255,255,0.1)', borderRadius: 'var(--radius-full)' }}>
-                    {book.category}
-                  </span>
-                  <span style={{ color: book.availableQuantity > 0 ? 'var(--accent-green)' : 'var(--accent-red)', fontWeight: 'bold' }}>
-                    {book.availableQuantity > 0 ? `Còn ${book.availableQuantity}` : 'Hết sách'}
-                  </span>
-                </div>
-              </Link>
-            ))}
+            {books.length === 0 ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                Không tìm thấy sách nào phù hợp với từ khóa của bạn.
+              </div>
+            ) : (
+              books.map((book) => (
+                <Link to={`/book/${book._id}`} key={book._id} className="glass-panel hover-lift" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', height: '100%', textDecoration: 'none', color: 'inherit' }}>
+                  <div style={{ height: '200px', background: 'linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary))', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Bìa sách</span>
+                  </div>
+                  <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>{book.title}</h3>
+                  <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontSize: '0.9rem' }}>{book.author}</p>
+                  <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.8rem', padding: '0.2rem 0.6rem', background: 'rgba(255,255,255,0.1)', borderRadius: 'var(--radius-full)' }}>
+                      {book.category}
+                    </span>
+                    <span style={{ color: book.availableQuantity > 0 ? 'var(--accent-green)' : 'var(--accent-red)', fontWeight: 'bold' }}>
+                      {book.availableQuantity > 0 ? `Còn ${book.availableQuantity}` : 'Hết sách'}
+                    </span>
+                  </div>
+                </Link>
+              ))
+            )}
           </div>
         )}
       </section>

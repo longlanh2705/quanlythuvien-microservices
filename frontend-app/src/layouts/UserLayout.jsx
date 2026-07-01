@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { BookOpen, User, Search } from 'lucide-react';
+import NotificationBell from '../components/NotificationBell';
 
 const UserLayout = () => {
   return (
@@ -16,6 +17,7 @@ const UserLayout = () => {
             <Link to="/" className="hover-lift" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
               <Search size={18} /> Khám phá
             </Link>
+            <NotificationBell />
             <Link to="/dashboard" className="btn btn-primary hover-lift">
               <User size={18} /> Tài khoản
             </Link>

@@ -23,6 +23,13 @@ const bookSchema = new mongoose.Schema(
       required: [true, 'Danh mục sách là bắt buộc'],
       trim: true,
     },
+    publisher: {
+      type: String,
+      trim: true,
+    },
+    publishYear: {
+      type: Number,
+    },
     quantity: {
       type: Number,
       required: [true, 'Số lượng sách nhập kho là bắt buộc'],

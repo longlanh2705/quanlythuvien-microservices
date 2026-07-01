@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      const res = await fetch('http://localhost:5002/api/auth/login', {
+      const res = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
@@ -32,19 +32,7 @@ export const AuthProvider = ({ children }) => {
       }
       return { success: false, message: data.message };
     } catch (error) {
-      // Mock logic cho dev khi server auth chưa chạy
-      if (username === 'admin' && password === 'admin123') {
-        const mockUser = { id: '1', username: 'admin', role: 'ADMIN', fullName: 'Quản trị viên' };
-        setUser(mockUser);
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        return { success: true, role: 'ADMIN' };
-      } else if (username.startsWith('SV')) {
-        const mockUser = { id: '2', username: username, role: 'STUDENT', fullName: 'Sinh viên' };
-        setUser(mockUser);
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        return { success: true, role: 'STUDENT' };
-      }
-      return { success: false, message: 'Lỗi kết nối tới Auth Server' };
+      return { success: false, message: 'Lỗi kết nối tới Auth Server qua API Gateway' };
     }
   };
 
