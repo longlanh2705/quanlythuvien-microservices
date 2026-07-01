@@ -1,10 +1,12 @@
 import express from 'express';
+import bcrypt from 'bcryptjs';
 import * as authController from '../controllers/authController.js';
-import User from '../models/user.js'; // Lấy luôn ở đây cho nhanh
+import User from '../models/user.js';
 
 const router = express.Router();
 
 router.post('/login', authController.login);
+router.post('/register', authController.register);
 router.post('/student', authController.createStudent);
 
 // Thêm API lấy danh sách user

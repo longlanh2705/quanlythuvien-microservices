@@ -1,9 +1,12 @@
 import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
-import { BookOpen, User, Search } from 'lucide-react';
+import { BookOpen, User, Search, ShoppingCart } from 'lucide-react';
 import NotificationBell from '../components/NotificationBell';
+import { useCart } from '../context/CartContext';
 
 const UserLayout = () => {
+  const { cartItems } = useCart();
+
   return (
     <div className="app-container">
       <header className="glass-panel" style={{ position: 'sticky', top: 0, zIndex: 100, borderRadius: 0, borderTop: 'none', borderLeft: 'none', borderRight: 'none' }}>
@@ -18,6 +21,21 @@ const UserLayout = () => {
               <Search size={18} /> Khám phá
             </Link>
             <NotificationBell />
+            <Link to="/cart" className="btn btn-secondary hover-lift" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', position: 'relative' }}>
+              <ShoppingCart size={18} />
+              <span>Giỏ mượn</span>
+              {cartItems.length > 0 && (
+                <span style={{
+                  position: 'absolute', top: '-8px', right: '-8px',
+                  background: 'var(--accent-blue)', color: 'white',
+                  borderRadius: '50%', width: '18px', height: '18px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '0.75rem', fontWeight: 'bold'
+                }}>
+                  {cartItems.length}
+                </span>
+              )}
+            </Link>
             <Link to="/dashboard" className="btn btn-primary hover-lift">
               <User size={18} /> Tài khoản
             </Link>

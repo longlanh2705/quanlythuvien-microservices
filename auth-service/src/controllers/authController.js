@@ -40,3 +40,24 @@ export const createStudent = async (req, res) => {
     });
   }
 };
+
+export const register = async (req, res) => {
+  try {
+    const { username, password, fullName } = req.body;
+    if (!username || !password || !fullName) {
+      return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ username, password và fullName' });
+    }
+
+    const result = await authService.registerAccount(username, password, fullName);
+    res.status(201).json({
+      success: true,
+      message: 'Đăng ký tài khoản thành công',
+      data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
