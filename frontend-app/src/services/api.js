@@ -1,8 +1,9 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
 // Tạo instance của axios cho catalog service (đi qua API Gateway)
 export const catalogApi = axios.create({
-  baseURL: 'http://localhost:5000/api/books',
+  baseURL: `${API_BASE_URL}/api/books`,
   headers: {
     'Content-Type': 'application/json',
   },

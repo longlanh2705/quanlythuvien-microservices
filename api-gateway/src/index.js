@@ -12,25 +12,25 @@ app.use(cors());
 
 // Proxy configuration - sử dụng pathFilter để giữ nguyên path gốc
 app.use(createProxyMiddleware({
-  target: 'http://localhost:5002',
+  target: 'http://auth-service:5002',
   changeOrigin: true,
   pathFilter: '/api/auth',
 }));
 
 app.use(createProxyMiddleware({
-  target: 'http://localhost:5001',
+  target: 'http://catalog-service:5001',
   changeOrigin: true,
   pathFilter: '/api/books',
 }));
 
 app.use(createProxyMiddleware({
-  target: 'http://localhost:5003',
+  target: 'http://circulation-service:5003',
   changeOrigin: true,
   pathFilter: ['/api/loans', '/api/penalties', '/api/settings'],
 }));
 
 app.use(createProxyMiddleware({
-  target: 'http://localhost:5004',
+  target: 'http://notification-service:5004',
   changeOrigin: true,
   pathFilter: ['/api/notifications', '/api/reports'],
 }));
