@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
 const settingApi = axios.create({
-  baseURL: 'http://localhost:5000/api/settings',
+  baseURL: `${API_BASE_URL}/api/settings`,
 });
 
 export const getSettings = async () => {

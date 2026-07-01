@@ -62,6 +62,7 @@ services:
       - auth-service
       - catalog-service
       - circulation-service
+      - notification-service
     networks:
       - library-net
 
@@ -115,6 +116,22 @@ services:
     depends_on:
       - postgres
       - rabbitmq
+    networks:
+      - library-net
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: library_notification_service
+    restart: always
+    ports:
+      - "5004:5004"
+    environment:
+      - PORT=5004
+      - MONGO_URI=mongodb://admin:adminpassword@mongodb:27017/notification_db?authSource=admin
+    depends_on:
+      - mongodb
     networks:
       - library-net
 

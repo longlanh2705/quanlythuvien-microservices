@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
 const penaltyApi = axios.create({
-  baseURL: 'http://localhost:5000/api/penalties',
+  baseURL: `${API_BASE_URL}/api/penalties`,
 });
 
 export const getPenalties = async () => {

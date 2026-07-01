@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
 export const notifApi = axios.create({
-  baseURL: 'http://localhost:5000/api/notifications',
+  baseURL: `${API_BASE_URL}/api/notifications`,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -24,7 +25,7 @@ export const markAsRead = async (id) => {
 };
 
 export const exportReportsApi = axios.create({
-  baseURL: 'http://localhost:5000/api/reports',
+  baseURL: `${API_BASE_URL}/api/reports`,
   headers: { 'Content-Type': 'application/json' },
 });
 
