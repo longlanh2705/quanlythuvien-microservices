@@ -34,3 +34,7 @@ coverage/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# SVN config
+.svn/
+
