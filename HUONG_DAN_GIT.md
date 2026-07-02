@@ -245,3 +245,93 @@ Trong thực tế đi làm, các dự án thường tuân theo một quy chuẩn
     ```
 5.  Lên GitHub tạo **Pull Request (PR)** từ `feature/register-page` vào `develop`.
 6.  Nhờ thành viên khác Review code. Nếu được duyệt (Approve), merge code vào nhánh `develop`.
+
+---
+
+# HƯỚNG DẪN TOÀN TẬP: TRIỂN KHAI VÀ VẬN HÀNH BẰNG GIT & GITHUB
+
+So với SVN (kiến trúc tập trung cổ điển), **Git** (kiến trúc phân tán) hiện tại là tiêu chuẩn số 1 của ngành phần mềm. Thay vì tự dựng Máy chủ SVN trên máy ảo Linux cực kỳ vất vả, với Git, chúng ta sẽ mượn **GitHub** làm kho lưu trữ trung gian. 
+
+Quy trình sử dụng Git sẽ nhàn hơn rất nhiều.
+
+---
+
+## GIAI ĐOẠN 1: Tạo kho lưu trữ trên GitHub (Không cần code)
+1. Bạn đăng nhập vào [GitHub.com](https://github.com).
+2. Tạo một Repository (Kho) mới mang tên `webbanhang` (Nên để chế độ Private nếu không muốn bị lộ code).
+3. Copy đường link của kho vừa tạo. Ví dụ: `https://github.com/Tên_Của_Bạn/webbanhang.git`
+
+---
+
+## GIAI ĐOẠN 2: Đẩy code từ Windows lên GitHub
+Chúng ta không dùng TortoiseSVN nữa. Bạn có thể dùng ứng dụng **GitHub Desktop**, hoặc dùng dòng lệnh (Git Bash) ngay trong thư mục XAMPP.
+
+Mở Terminal tại thư mục `C:\xampp\htdocs\`, gõ lần lượt các lệnh sau:
+
+```bash
+# 1. Khởi tạo Git trong thư mục này
+git init
+
+# 2. Đưa cả 2 thư mục Baitaplon và WinmartMVC vào danh sách chờ
+git add Baitaplon WinmartMVC
+
+# 3. Gói code lại và dán nhãn (Commit)
+git commit -m "Lần đầu đẩy hệ thống web lên GitHub"
+
+# 4. Đổi tên nhánh chính thành 'main' (tiêu chuẩn mới của Git)
+git branch -M main
+
+# 5. Khai báo địa chỉ của kho GitHub cho máy tính biết
+git remote add origin https://github.com/Tên_Của_Bạn/webbanhang.git
+
+# 6. Bắn toàn bộ code lên GitHub
+git push -u origin main
+```
+*(Nếu nó hiện bảng hỏi tài khoản, bạn hãy đăng nhập bằng tài khoản GitHub).*
+
+---
+
+## GIAI ĐOẠN 3: Triển khai trên máy ảo Linux (Deployment)
+Bây giờ code đã nằm an toàn trên GitHub. Bạn bật máy ảo Linux lên để tải code về.
+
+Mở Terminal của Linux và gõ:
+```bash
+# 1. Tạo thư mục làm việc riêng để không ảnh hưởng hệ thống
+sudo mkdir -p /opt/webbanhang
+sudo chown -R $USER:$USER /opt/webbanhang
+cd /opt/webbanhang
+
+# 2. Kéo toàn bộ code từ GitHub về thẳng thư mục này
+git clone https://github.com/Tên_Của_Bạn/webbanhang.git .
+
+# 3. Đi vào thư mục chứa cấu hình Docker
+cd Baitaplon
+
+# 4. Khởi động hệ thống
+docker-compose up -d --build
+```
+
+🎉 **XONG!** Website của bạn đã được khởi chạy thành công. Quy trình dùng Git gọn gàng hơn SVN rất nhiều do bỏ qua được khâu tự dựng máy chủ Apache và cấu hình phân quyền bằng tay.
+
+---
+
+## TÓM TẮT VÒNG LẶP LÀM VIỆC MỖI NGÀY:
+Khi hệ thống đã chạy ổn định, vòng lặp làm việc của bạn khi sửa code sẽ chỉ còn 2 bước:
+
+**1. Sau khi sửa code xong trên Windows:**
+```bash
+git add .
+git commit -m "Sửa lỗi chức năng A"
+git push
+```
+
+**2. Sang máy ảo Linux lấy code mới và khởi động lại:**
+```bash
+cd /opt/webbanhang
+git pull
+cd Baitaplon
+docker-compose down
+docker-compose up -d
+```
+
+*(Gợi ý: Bước số 2 ở Linux hoàn toàn có thể tự động hóa bằng công cụ **GitHub Actions**, khi đó bạn chỉ việc gõ `git push` ở máy Windows là trang web tự động cập nhật, bạn không cần phải đụng vào máy ảo Linux nữa).*
