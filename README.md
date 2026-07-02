@@ -136,3 +136,13 @@ Nếu bạn gặp lỗi khi chạy `npm run dev` trong frontend-app, hãy đảm
 ### Lệnh start-all.bat không chạy được
 
 Lệnh `start-all.bat` có thể không tương thích với môi trường PowerShell hiện tại. Vui lòng sử dụng cách thủ công là khởi chạy backend với `docker-compose up -d` và frontend bằng `npm run dev` theo hướng dẫn phía trên.
+
+## Triển khai CI/CD (GitHub Actions)
+
+Dự án hiện đã được cấu hình CI/CD tự động thông qua **GitHub Actions Self-hosted Runner** chạy trực tiếp trên máy ảo. 
+Mỗi khi bạn đẩy mã nguồn mới lên nhánh `master` bằng lệnh:
+```bash
+git push origin master
+```
+GitHub sẽ tự động gửi tín hiệu kích hoạt máy ảo Ubuntu tự chạy lệnh cập nhật mã nguồn (`git pull`) và build lại các container Docker (`docker compose up -d --build`).
+
