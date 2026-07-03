@@ -38,3 +38,6 @@ Thumbs.db
 # SVN config
 .svn/
 
+# Documents
+*.doc
+*.docx
